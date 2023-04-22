@@ -76,7 +76,7 @@ object MiningFeatures {
     private var inRaffle = false
     var lastTPLoc: BlockPos? = null
     var waypoints = hashMapOf<String, BlockPos>()
-    var deadCount = 0
+    var tpCount = 0
     private val SBE_DSM_PATTERN =
         Regex("\\\$(?:SBECHWP\\b|DSMCHWP):(?<stringLocation>.*?)@-(?<x>-?\\d+),(?<y>-?\\d+),(?<z>-?\\d+)")
     private val xyzPattern =
@@ -111,6 +111,7 @@ object MiningFeatures {
         if (!Utils.inSkyblock) return
         if (Skytils.config.crystalHollowDeathWaypoint && event.packet is S08PacketPlayerPosLook && mc.thePlayer != null) {
             lastTPLoc = mc.thePlayer.position
+            tpCount = 50
         }
     }
 
@@ -241,8 +242,6 @@ object MiningFeatures {
             CrystalHollowsMap.Locations.KingYolkar.loc.set()
         }
         if (formatted.startsWith("§r§cYou died")) {
-            deadCount =
-                50 //this is to make sure the scoreboard has time to update and nothing moves halfway across the map
             if (Skytils.config.crystalHollowDeathWaypoint && SBInfo.mode == SkyblockIsland.CrystalHollows.mode && lastTPLoc != null) {
                 UChat.chat(
                     UTextComponent("$prefix §eClick to set a death waypoint at ${lastTPLoc!!.x} ${lastTPLoc!!.y} ${lastTPLoc!!.z}").setClick(
@@ -387,11 +386,11 @@ object MiningFeatures {
     fun onTick(event: ClientTickEvent) {
         if (!Utils.inSkyblock || event.phase != TickEvent.Phase.START) return
         if ((Skytils.config.crystalHollowWaypoints || Skytils.config.crystalHollowMapPlaces) && SBInfo.mode == SkyblockIsland.CrystalHollows.mode
-            && deadCount == 0 && mc.thePlayer != null
+            && tpCount == 0 && mc.thePlayer != null
         ) {
             CrystalHollowsMap.Locations.cleanNameToLocation[SBInfo.location]?.loc?.set()
-        } else if (deadCount > 0)
-            deadCount--
+        } else if (tpCount > 0)
+            tpCount--
     }
 
     @SubscribeEvent
